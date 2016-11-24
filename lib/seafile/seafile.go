@@ -74,12 +74,12 @@ func init() {
 func New() (*Seafile, error) {
     token, err := GetToken(userName, password)
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("failed to get token (%s)", err)
     }
 
     link, err := GetUploadLink(token)
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("failed to get upload link (%s)", err)
     }
 
     s := &Seafile{token: token, uploadLink: link}

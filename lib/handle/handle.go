@@ -22,7 +22,7 @@ type Handler struct {
 func New() (*Handler, error) {
     s, err := seafile.New()
     if err != nil {
-        fmt.Errorf("errror creating init seafile: %v\n", err)
+        return nil, fmt.Errorf("errror creating init seafile: %v\n", err)
     }
 
     return &Handler{s: s}, nil
@@ -68,6 +68,11 @@ func (h *Handler)HandleLog(file string) (string, error) {
 func (h *Handler)walkLogs(logName string) (string, error) {
     walkFunc := func (path string, info os.FileInfo, err error) error {
         if path == h.workingDir {  // skip self
+            return nil
+        }
+
+        if info.Mode() & os.ModeSymlink == os.ModeSymlink {
+            fmt.Printf("%s is a link, skip\n", path)
             return nil
         }
 

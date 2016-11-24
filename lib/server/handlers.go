@@ -26,7 +26,7 @@ func ReceiveLog(w http.ResponseWriter, r *http.Request) {
     fin, fHeader, err := r.FormFile("file")
     if err != nil {
         http.Error(w, "" + err.Error(), http.StatusBadRequest)
-        panic(err)
+        log.Println(err)
     }
 
     filePath := uploadDir + "/" + fHeader.Filename
@@ -34,21 +34,22 @@ func ReceiveLog(w http.ResponseWriter, r *http.Request) {
     fout, err := os.Create(filePath)
     if err != nil {
         log.Printf("error in creating upload file: %v", err)
-        panic(err)
+        http.Error(w, "" + err.Error(), http.StatusBadRequest)
+        return
     }
 
     defer fout.Close()
 
     _, err = io.Copy(fout, fin)
     if err != nil {
-        http.Error(w, "error saving file: " + err.Error(), http.StatusBadRequest)
-        panic(err)
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        log.Println(err)
     }
 
     link, err := handleLogs(filePath)
     if err != nil {
-        http.Error(w, "error handling log: " + err.Error(), http.StatusBadRequest)
-        panic(err)
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        log.Println(err)
     }
 
     fmt.Fprintln(w, link)
@@ -57,12 +58,12 @@ func ReceiveLog(w http.ResponseWriter, r *http.Request) {
 func handleLogs(path string) (string, error) {
     h, err := handle.New()
     if err != nil {
-        return "", fmt.Errorf("error in initing handle obj: %v", err)
+        return "", fmt.Errorf("error in initing Handler Object: %v", err)
     }
 
     link, err := h.HandleLog(path)
     if err != nil {
-        return "", fmt.Errorf("error in handling log: %v", err)
+        return "", fmt.Errorf("error in handleLog: %v", err)
     }
 
     return link, nil
